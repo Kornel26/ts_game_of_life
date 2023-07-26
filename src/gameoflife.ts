@@ -9,12 +9,12 @@ import type { Point } from "./models/Point";
 
 export class GameOfLife {
 
-    private array: Point[] = [];
+    private array: Point[];
 
     constructor(array: Point[] = []){
         this.array = array;
     }
 
-    
+    public getCurrentGeneration() { return this.array; }
 
 }

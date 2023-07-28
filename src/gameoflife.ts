@@ -5,16 +5,30 @@
     Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
  */
 
-import type { Point } from "./models/Point";
+import { Point } from "./models/Point";
 
 export class GameOfLife {
 
-    private array: Point[];
+    private readonly neightbors: Point[] = [
+        new Point(-1, -1), new Point(0, -1), new Point(1, -1),
+        new Point(-1, 0), new Point(1, 0),
+        new Point(-1, 1), new Point(0, 1), new Point(1, 1),
+    ];
 
-    constructor(array: Point[] = []){
-        this.array = array;
+    private gen: Point[];
+
+    constructor(gen: Point[] = []) {
+        this.gen = gen;
     }
 
-    public getCurrentGeneration() { return this.array; }
+    public getCurrentGeneration() { return this.gen; }
+
+    private getNumberOfLiveNeighbors(cell: Point, gen: Point[]): number {
+        let count = 0;
+        for (const neightbor of this.neightbors) {
+            if(gen.some(c => c.x === cell.x + neightbor.x && c.y === cell.y + neightbor.y)) count++;
+        }        
+        return count;
+    }
 
 }

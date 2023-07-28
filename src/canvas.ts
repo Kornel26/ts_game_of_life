@@ -48,7 +48,7 @@ export class Canvas {
             this.mousePos.x = x;
             this.mousePos.y = y;
             this.mousexyHtml.innerText = `x: ${this.mousePos.x} y: ${this.mousePos.y}`;
-            if(this.isDrag){
+            if (this.isDrag) {
                 this.draw();
             }
         }, 8));
@@ -82,8 +82,12 @@ export class Canvas {
 
         this.canvas.addEventListener('wheel', Utils.throttle((e: WheelEvent) => {
             const wheelDirection = e.deltaY > 0;
-            if (!wheelDirection && this.maxCellSize > this.cellSize) this.cellSize++;
-            if (wheelDirection && this.minCellSize < this.cellSize) this.cellSize--;
+            if (!wheelDirection && this.maxCellSize > this.cellSize) {
+                this.cellSize++;
+            }
+            if (wheelDirection && this.minCellSize < this.cellSize) {
+                this.cellSize--;
+            }
             this.draw();
         }, 10));
     }
@@ -91,13 +95,12 @@ export class Canvas {
     private draw() {
         this.canvas.width = this.maxWidth - this.maxWidth % this.cellSize;
         this.canvas.height = this.maxHeight - this.maxHeight % this.cellSize;
-        if(this.isDrag){
-            this.ctx.translate(this.mousePos.x - this.dragStart.x , this.mousePos.y - this.dragStart.y);
+        if (this.isDrag) {
+            this.ctx.translate(this.mousePos.x - this.dragStart.x, this.mousePos.y - this.dragStart.y);
         }
         this.clear();
         this.drawGrid();
         this.drawCells();
-        
     }
 
     private drawCells(): void {
@@ -109,17 +112,17 @@ export class Canvas {
 
     private drawGrid(): void {
         // Draw vertical lines
-        for (let x = 0; x < this.canvas.width; x += this.cellSize) {
+        for (let x = -this.canvas.width; x < this.canvas.width * 2; x += this.cellSize) {
             this.ctx.beginPath();
-            this.ctx.moveTo(x, 0);
-            this.ctx.lineTo(x, this.canvas.height);
+            this.ctx.moveTo(x, -this.canvas.height);
+            this.ctx.lineTo(x, this.canvas.height * 2);
             this.ctx.stroke();
         }
         // Draw horizontal lines
-        for (let y = 0; y < this.canvas.height; y += this.cellSize) {
+        for (let y = -this.canvas.height; y < this.canvas.height * 2; y += this.cellSize) {
             this.ctx.beginPath();
-            this.ctx.moveTo(0, y);
-            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.moveTo(-this.canvas.width, y);
+            this.ctx.lineTo(this.canvas.width * 2, y);
             this.ctx.stroke();
         }
     }

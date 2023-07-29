@@ -1,10 +1,3 @@
-/**
-    Any live cell with fewer than two live neighbours dies, as if by underpopulation.
-    Any live cell with two or three live neighbours lives on to the next generation.
-    Any live cell with more than three live neighbours dies, as if by overpopulation.
-    Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
- */
-
 import { Point } from "./models/Point";
 
 export class GameOfLife {
@@ -21,14 +14,50 @@ export class GameOfLife {
         this.gen = gen;
     }
 
-    public getCurrentGeneration() { return this.gen; }
+    public getCurrentGeneration(): Point[] { return this.gen; }
+
+    public getNextGeneration(): void {
+        this.gen = this.nextGeneration(this.gen);
+    }
+
+    public addNewCell(cell: Point): void {
+        this.gen.push(cell);
+    }
 
     private getNumberOfLiveNeighbors(cell: Point, gen: Point[]): number {
         let count = 0;
         for (const neightbor of this.neightbors) {
-            if(gen.some(c => c.x === cell.x + neightbor.x && c.y === cell.y + neightbor.y)) count++;
-        }        
+            if (gen.some(c => c.x === cell.x + neightbor.x && c.y === cell.y + neightbor.y)) count++;
+        }
         return count;
+    }
+
+    private nextGeneration(gen: Point[]): Point[] {
+        const nextGen: Point[] = [];
+        const candidates: Point[] = [];
+
+        for (const cell of gen) {
+            candidates.push(cell);
+            for (const neighbor of this.neightbors) {
+                candidates.push(new Point(neighbor.x + cell.x, neighbor.y + cell.y));
+            }
+        }
+
+        const uniqueCandidates = Point.removeDuplicates(candidates);
+
+        for (const candidate of uniqueCandidates) {
+            const liveNeighbors = this.getNumberOfLiveNeighbors(candidate, gen);
+            if (gen.some(cell => cell.x === candidate.x && cell.y === candidate.y)) {
+                if (liveNeighbors === 2 || liveNeighbors === 3) {
+                    nextGen.push(candidate);
+                }
+            } else {
+                if (liveNeighbors === 3) {
+                    nextGen.push(candidate);
+                }
+            }
+        }
+        return nextGen;
     }
 
 }

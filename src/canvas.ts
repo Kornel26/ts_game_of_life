@@ -5,10 +5,14 @@ import { GameOfLife } from "./gameoflife";
 export class Canvas {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
+    private mainLoopTimer: number = 500;
+    private isMainLoopOn: boolean = true;
 
     private gol: GameOfLife;
 
     private mousexyHtml: HTMLSpanElement;
+    private speedHtml: HTMLInputElement;
+    private mainLoopHtml: HTMLButtonElement;
 
     private origo: Point = new Point();
     private mousePos: Point = new Point();
@@ -22,29 +26,41 @@ export class Canvas {
 
     private maxWidth: number;
     private maxHeight: number;
+    private canvasTop: number;
+    private canvasLeft: number;
 
-    constructor(width: number, height: number) {
+    constructor(width: number, height: number, gen?: Point[]) {
+        this.mousexyHtml = document.querySelector('#mousepos') as HTMLSpanElement;
+        this.speedHtml = document.querySelector('#speed') as HTMLInputElement;
+        this.mainLoopHtml = document.querySelector('#mainloopbtn') as HTMLButtonElement;
         this.canvas = document.querySelector('#canvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.maxWidth = width - 50;
         this.maxHeight = height - 50;
         this.canvas.width = this.maxWidth;
         this.canvas.height = this.maxHeight;
+        this.canvasTop = this.canvas.getBoundingClientRect().top;
+        this.canvasLeft = this.canvas.getBoundingClientRect().left;
 
-        this.gol = new GameOfLife([new Point(17, 49), new Point(3, 18), new Point(28, 31), new Point(45, 5), new Point(9, 44),
-        new Point(38, 25), new Point(27, 42), new Point(21, 9), new Point(12, 33), new Point(47, 46),
-        new Point(13, 4), new Point(2, 19), new Point(39, 47), new Point(43, 30), new Point(36, 24),
-        new Point(31, 8), new Point(26, 40), new Point(25, 37), new Point(7, 11), new Point(35, 37)]);
+        this.gol = new GameOfLife(gen ? gen : []);
 
-        this.mousexyHtml = document.querySelector('#mousepos') as HTMLSpanElement;
         this.registerEventHandlers();
-        this.draw();
+        this.mainLoop();
+    }
+
+    private mainLoop = (): void => {
+        if (this.isMainLoopOn) {
+            this.gol.getNextGeneration();
+            this.draw();
+        }
+
+        setTimeout(this.mainLoop, this.mainLoopTimer);
     }
 
     private registerEventHandlers(): void {
         this.canvas.addEventListener('mousemove', Utils.throttle((e: MouseEvent) => {
-            let x: number = e.x - this.canvas.offsetLeft;
-            let y: number = e.y - this.canvas.offsetTop;
+            const x: number = e.x - this.canvas.offsetLeft;
+            const y: number = e.y - this.canvas.offsetTop;
             this.mousePos.x = x;
             this.mousePos.y = y;
             this.mousexyHtml.innerText = `x: ${this.mousePos.x} y: ${this.mousePos.y}`;
@@ -54,8 +70,8 @@ export class Canvas {
         }, 8));
 
         this.canvas.addEventListener('mousedown', (e: MouseEvent) => {
-            let x: number = e.x - this.canvas.offsetLeft;
-            let y: number = e.y - this.canvas.offsetTop;
+            const x: number = e.x - this.canvas.offsetLeft;
+            const y: number = e.y - this.canvas.offsetTop;
             if (!this.isDrag) {
                 this.dragStart = new Point(x, y);
                 this.isDrag = true;
@@ -63,8 +79,8 @@ export class Canvas {
         });
 
         this.canvas.addEventListener('mouseup', (e: MouseEvent) => {
-            let x: number = e.x - this.canvas.offsetLeft;
-            let y: number = e.y - this.canvas.offsetTop;
+            const x: number = e.x - this.canvas.offsetLeft;
+            const y: number = e.y - this.canvas.offsetTop;
             if (this.isDrag) {
                 this.dragEnd = new Point(x, y);
                 this.isDrag = false;
@@ -90,11 +106,31 @@ export class Canvas {
             }
             this.draw();
         }, 10));
+
+        this.speedHtml.addEventListener('change', (e: any) => {
+            this.mainLoopTimer = parseInt(this.speedHtml.value);
+        });
+
+        this.canvas.addEventListener('click', (e: MouseEvent) => {
+            if (!Point.arePointsEqual(this.dragStart, this.dragEnd)) return;
+            const x: number = e.x - this.canvasLeft - this.origo.x * this.cellSize;
+            const y: number = e.y - this.canvasTop - this.origo.y * this.cellSize;
+            const pointX: number = Math.floor(x / this.cellSize);
+            const pointY: number = Math.floor(y / this.cellSize);
+            this.gol.addNewCell(new Point(pointX, pointY));
+            this.draw();
+        });
+
+        this.mainLoopHtml.addEventListener('click', (e: Event) => {
+            this.isMainLoopOn = !this.isMainLoopOn;
+        });
     }
 
     private draw() {
         this.canvas.width = this.maxWidth - this.maxWidth % this.cellSize;
         this.canvas.height = this.maxHeight - this.maxHeight % this.cellSize;
+        this.canvasTop = this.canvas.getBoundingClientRect().top;
+        this.canvasLeft = this.canvas.getBoundingClientRect().left;
         if (this.isDrag) {
             this.ctx.translate(this.mousePos.x - this.dragStart.x, this.mousePos.y - this.dragStart.y);
         }
@@ -111,6 +147,8 @@ export class Canvas {
     }
 
     private drawGrid(): void {
+        this.ctx.save();
+        this.ctx.strokeStyle = 'lightblue';
         // Draw vertical lines
         for (let x = -this.canvas.width; x < this.canvas.width * 2; x += this.cellSize) {
             this.ctx.beginPath();
@@ -125,6 +163,7 @@ export class Canvas {
             this.ctx.lineTo(this.canvas.width * 2, y);
             this.ctx.stroke();
         }
+        this.ctx.restore();
     }
 
     private clear(): void {

@@ -11,3 +11,20 @@
     text-shadow: 1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white;
     white-space: nowrap;
 }
+
+#speed {
+    width: 50px;
+}
+
+.btn {
+    color: black;
+    font-weight: 700;
+}
+
+.start {
+    background-color: #4CAF50;
+}
+
+.stop {
+    background-color: #f44336;
+}

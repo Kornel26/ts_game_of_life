@@ -5,12 +5,11 @@ import { GameOfLife } from "./gameoflife";
 export class Canvas {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
-    private mainLoopTimer: number = 500;
-    private isMainLoopOn: boolean = true;
+    private mainLoopTimer: number = 100;
+    private isMainLoopOn: boolean = false;
 
     private gol: GameOfLife;
 
-    private mousexyHtml: HTMLSpanElement;
     private speedHtml: HTMLInputElement;
     private mainLoopHtml: HTMLButtonElement;
 
@@ -22,29 +21,25 @@ export class Canvas {
 
     private cellSize: number = 30;
     private maxCellSize: number = 50;
-    private minCellSize: number = 10;
+    private minCellSize: number = 5;
 
-    private maxWidth: number;
-    private maxHeight: number;
-    private canvasTop: number;
-    private canvasLeft: number;
+    private readonly margin: number = 50;
+    private maxWidth!: number;
+    private maxHeight!: number;
+    private canvasTop!: number;
+    private canvasLeft!: number;
 
     constructor(width: number, height: number, gen?: Point[]) {
-        this.mousexyHtml = document.querySelector('#mousepos') as HTMLSpanElement;
         this.speedHtml = document.querySelector('#speed') as HTMLInputElement;
+        this.speedHtml.value = `${this.mainLoopTimer}`;
         this.mainLoopHtml = document.querySelector('#mainloopbtn') as HTMLButtonElement;
         this.canvas = document.querySelector('#canvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-        this.maxWidth = width - 50;
-        this.maxHeight = height - 50;
-        this.canvas.width = this.maxWidth;
-        this.canvas.height = this.maxHeight;
-        this.canvasTop = this.canvas.getBoundingClientRect().top;
-        this.canvasLeft = this.canvas.getBoundingClientRect().left;
-
         this.gol = new GameOfLife(gen ? gen : []);
 
+        this.resize(width, height);
         this.registerEventHandlers();
+        this.draw();
         this.mainLoop();
     }
 
@@ -57,13 +52,22 @@ export class Canvas {
         setTimeout(this.mainLoop, this.mainLoopTimer);
     }
 
+    private resize(width: number, height: number) {
+        this.maxWidth = width - this.margin;
+        this.maxHeight = height - this.margin;
+        this.canvas.width = this.maxWidth;
+        this.canvas.height = this.maxHeight;
+        this.canvasTop = this.canvas.getBoundingClientRect().top;
+        this.canvasLeft = this.canvas.getBoundingClientRect().left;
+        this.draw();
+    }
+
     private registerEventHandlers(): void {
         this.canvas.addEventListener('mousemove', Utils.throttle((e: MouseEvent) => {
             const x: number = e.x - this.canvas.offsetLeft;
             const y: number = e.y - this.canvas.offsetTop;
             this.mousePos.x = x;
             this.mousePos.y = y;
-            this.mousexyHtml.innerText = `x: ${this.mousePos.x} y: ${this.mousePos.y}`;
             if (this.isDrag) {
                 this.draw();
             }
@@ -123,6 +127,13 @@ export class Canvas {
 
         this.mainLoopHtml.addEventListener('click', (e: Event) => {
             this.isMainLoopOn = !this.isMainLoopOn;
+            this.mainLoopHtml.classList.toggle('start');
+            this.mainLoopHtml.classList.toggle('stop');
+            this.mainLoopHtml.innerText = this.isMainLoopOn ? `Stop` : `Start`;
+        });
+
+        window.addEventListener('resize', (e: Event) => {
+            this.resize(window.innerWidth, window.innerHeight);
         });
     }
 

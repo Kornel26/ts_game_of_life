@@ -9,9 +9,12 @@
 </head>
 
 <body>
-  <span class="highlight-text">Speed (ms): <input id="speed" type="number"></span>
-  <span class="highlight-text"><button id="mainloopbtn" class="btn start">Start</button></span>
-
+  <span>Speed (ms): <input id="speed" type="number"></span>
+  <span><button id="mainloopbtn" class="btn start">Start</button></span>
+  <select id="presets">
+    <option>Choose preset..</option>
+  </select>
+  
   <canvas id="canvas"></canvas>
 
   <script src="dist/index.js" type="module"></script>

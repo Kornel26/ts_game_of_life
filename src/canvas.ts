@@ -1,6 +1,7 @@
 import { Utils } from "./utils";
 import { Point } from "./models/Point";
 import { GameOfLife } from "./gameoflife";
+import { Preset } from "./presets";
 
 export class Canvas {
     private canvas: HTMLCanvasElement;
@@ -12,6 +13,7 @@ export class Canvas {
 
     private speedHtml: HTMLInputElement;
     private mainLoopHtml: HTMLButtonElement;
+    private presetHtml: HTMLSelectElement;
 
     private origo: Point = new Point();
     private mousePos: Point = new Point();
@@ -33,10 +35,12 @@ export class Canvas {
         this.speedHtml = document.querySelector('#speed') as HTMLInputElement;
         this.speedHtml.value = `${this.mainLoopTimer}`;
         this.mainLoopHtml = document.querySelector('#mainloopbtn') as HTMLButtonElement;
+        this.presetHtml = document.querySelector('#presets') as HTMLSelectElement;
         this.canvas = document.querySelector('#canvas') as HTMLCanvasElement;
         this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
         this.gol = new GameOfLife(gen ? gen : []);
 
+        this.loadPresets();
         this.resize(width, height);
         this.registerEventHandlers();
         this.draw();
@@ -50,6 +54,15 @@ export class Canvas {
         }
 
         setTimeout(this.mainLoop, this.mainLoopTimer);
+    }
+
+    private loadPresets(): void {
+        for (const [key, value] of Object.entries(Preset.presets)) {
+            const option: HTMLOptionElement = document.createElement('option');
+            option.value = key;
+            option.textContent = key;
+            this.presetHtml.appendChild(option);
+        }
     }
 
     private resize(width: number, height: number) {
@@ -134,6 +147,13 @@ export class Canvas {
 
         window.addEventListener('resize', (e: Event) => {
             this.resize(window.innerWidth, window.innerHeight);
+        });
+
+        this.presetHtml.addEventListener('change', (e) => {
+            const value: string = this.presetHtml.value;
+            const selectedPreset: Point[] = Preset.presets[value];
+            this.gol = new GameOfLife(selectedPreset);
+            this.draw();
         });
     }
 

@@ -129,7 +129,7 @@ export class Canvas {
         });
 
         this.canvas.addEventListener('click', (e: MouseEvent) => {
-            if (!Point.arePointsEqual(this.dragStart, this.dragEnd)) return;
+            if (!Point.equal(this.dragStart, this.dragEnd)) return;
             const x: number = e.x - this.canvasLeft - this.origo.x * this.cellSize;
             const y: number = e.y - this.canvasTop - this.origo.y * this.cellSize;
             const pointX: number = Math.floor(x / this.cellSize);
@@ -180,14 +180,12 @@ export class Canvas {
     private drawGrid(): void {
         this.ctx.save();
         this.ctx.strokeStyle = 'lightblue';
-        // Draw vertical lines
         for (let x = -this.canvas.width; x < this.canvas.width * 2; x += this.cellSize) {
             this.ctx.beginPath();
             this.ctx.moveTo(x, -this.canvas.height);
             this.ctx.lineTo(x, this.canvas.height * 2);
             this.ctx.stroke();
         }
-        // Draw horizontal lines
         for (let y = -this.canvas.height; y < this.canvas.height * 2; y += this.cellSize) {
             this.ctx.beginPath();
             this.ctx.moveTo(-this.canvas.width, y);

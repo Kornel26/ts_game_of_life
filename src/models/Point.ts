@@ -8,14 +8,18 @@ export class Point {
         this.y = y;
     }
 
-    public static arePointsEqual(point1: Point, point2: Point): boolean {
+    public static equal(point1: Point, point2: Point): boolean {
         return point1.x === point2.x && point1.y === point2.y;
+    }
+
+    public equals(point: Point): boolean {
+        return this.x === point.x && this.y === point.y;
     }
 
     public static removeDuplicates(points: Point[]): Point[] {
         const uniquePoints: Point[] = [];
         points.forEach(point => {
-            if (!uniquePoints.some(uniquePoint => this.arePointsEqual(uniquePoint, point))) {
+            if (!uniquePoints.some(uniquePoint => uniquePoint.equals(point))) {
                 uniquePoints.push(point);
             }
         });
